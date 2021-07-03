@@ -1,0 +1,269 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */options{  static = true;}PARSER_BEGIN(Lex)package teste;
+
+public class Lex{
+  public static void main(String args []) throws ParseException, FileNotFoundException
+  {
+    Lex parser = new Lex(System.in);
+    while (true)
+    {
+      System.out.println("Reading from standard input...");
+      System.out.print("Entre com o programa :");
+      try
+      {
+        Lex.Start();
+      }
+      catch (Exception e)
+      {
+        System.out.println("NOK.");
+        System.out.println(e.getMessage());
+        Lex.ReInit(System.in);
+      }
+      catch (Error e)
+      {
+        System.out.println("Oops.");
+        System.out.println(e.getMessage());
+        break;
+      }
+    }
+  }
+}PARSER_END(Lex)
+
+SKIP :
+{
+  " "
+| "\r"
+| "\t"
+| "\n"
+| < "//" (~["\n"])* "\n" > // Comentários
+| < "/*" > : IN_COMMENT // Comentários
+}
+
+<IN_COMMENT>
+SKIP :
+{
+< "*/" >
+}
+
+<IN_COMMENT>
+SKIP :
+{
+< ~[] >
+}
+
+
+TOKEN : /* Operadores */
+{
+  < PLUS 		: "+" >
+| < MINUS 		: "-" >
+| < MULTIPLY 	: "*" >
+| < DIVIDE 		: "/" >
+| < LESSTHAN 	: "<" >
+| < MORETHAN 	: ">" >
+| < DIFTHAN		: "!=" >
+| < EQUALTHAN 	: "==" >
+| < OR			: "||" >
+| < AND			: "&&" >
+}
+
+TOKEN :
+{
+	< IF     		 : "if">
+| 	< ELSE   		 : "else" >
+| 	< FOR    		 : "for" >
+| 	< WHILE  		 : "while" >
+| 	< DO     		 : "do" >
+| 	< INT    		 : "int" >
+| 	< FLOAT    		 : "float" >
+| 	< CHAR    		 : "char" >
+| 	< VOID   		 : "void" >
+| 	< MAIN   		 : "main" >
+| 	< PRINT  		 : "print" >
+|   < PAUSE  		 : "pause" >
+|   < CLS 	 		 : "cls" >
+| 	< ASSIGNMENT 	 : "=" > 
+|   < #DIGIT 		 : ["0" - "9"] >
+|	< IDENTIFIER     : (["a" - "z"] | "_")  (["a" - "z"] | <DIGIT> | "_")* >
+|	< NUM    		 : (<DIGIT>)+ >
+|	< REAL   		 : ((<DIGIT>)+ "." (<DIGIT>)*) | ((<DIGIT>)* "." (<DIGIT>)+) >
+| 	< STRING 		 : "\"" (~["\n" , "\r" , "'"])*  "\"" >
+|	< ESQPAR		 : "(" >
+|	< DIRPAR		 : ")" >
+|	< ESQCURLY		 : "{" >
+| 	< DIRCURLY		 : "}" >
+| 	< PONTOVIRGULA	 : ";" >
+}
+
+void Start() :
+{}
+{
+	< VOID > < MAIN > < ESQPAR > < DIRPAR >
+	< ESQCURLY >
+		statement()
+  	< DIRCURLY >
+  	< EOF > 	
+}
+
+// if, definição de uma variável com tipo, atribuição em uma variável e while
+void statement() :
+{}
+{
+	( 
+	  	ifCondition()
+| 		variableDefine()
+| 		variableAssignment()
+| 		whileLoop()
+	)*
+}
+
+/* if(RelationalStatement())
+		ifStatement()
+*/
+void ifCondition() :
+{}
+{
+	< IF > < ESQPAR > RelationalStatement() < DIRPAR > ifStatement()
+}
+
+// Variável RelationalSymbol() Variável
+void RelationalStatement() :
+{}
+{
+  < IDENTIFIER > RelationalSymbol() <IDENTIFIER >
+}
+
+void RelationalSymbol() :
+{}
+{
+  < LESSTHAN >
+| < MORETHAN >
+| < EQUALTHAN >
+| < DIFTHAN >
+| < OR >
+| < AND >
+}
+
+// { statement() } ou OneStatement()
+void ifStatement() :
+{}
+{
+	(   
+  		< ESQCURLY > statement() < DIRCURLY >
+| 		OneStatement()
+	)
+}
+
+// statatement() sem repetição
+void OneStatement() :
+{}
+{
+	( 
+	  	ifCondition()
+| 		variableDefine()
+| 		variableAssignment()
+	)
+}
+
+// TipoVariável variableDefineHelper()
+void variableDefine() :
+{}
+{
+  (
+	< INT >
+| 	< FLOAT >
+| 	< CHAR >    
+  )
+  variableDefineHelper()
+}
+
+// Variável;
+void variableDefineHelper() :
+{}
+{
+  < IDENTIFIER > < PONTOVIRGULA >
+}
+
+// variableAssigmentHelper() Variável;
+void variableAssignment() :
+{}
+{
+    variableAssignmentHelper()
+    (
+      < NUM > < PONTOVIRGULA >
+| 	  < FLOAT > < PONTOVIRGULA >
+| 	  < CHAR > < PONTOVIRGULA >
+    )
+}
+
+// Variável =
+void variableAssignmentHelper() :
+{}
+{
+  < IDENTIFIER > < ASSIGNMENT >
+}
+
+// while(RelationalStatement()) { statement() }
+void whileLoop() :
+{}
+{
+  < WHILE > < ESQPAR > RelationalStatement() < DIRPAR > < ESQCURLY > statement() < DIRCURLY >
+}
+
+
+/* Código da soma
+int one_line() :
+{}
+{
+  operation() ";"
+  {
+    return 0;
+  }
+| ";"
+  {
+    return 1;
+  }
+}
+
+void operation() :
+{}
+{
+  term()
+  (
+    (
+      < PLUS >
+    | < MINUS >
+    )
+    term()
+  )*
+}
+
+void term() :
+{}
+{
+  unary()
+  (
+    (
+      < MULTIPLY >
+    | < DIVIDE >
+    )
+    unary()
+  )*
+}
+
+void unary() :
+{}
+{
+  < MINUS > element()
+| element()
+}
+
+void element() :
+{}
+{
+  < NUM >
+| < REAL >
+| "(" operation() ")"
+}
+
+*/
