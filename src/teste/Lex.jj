@@ -114,6 +114,8 @@ void statement() :
 | 		variableDefine()
 | 		variableAssignment()
 | 		whileLoop()
+
+
 	)*
 }
 
@@ -142,6 +144,14 @@ void RelationalSymbol() :
 | < DIFTHAN >
 | < OR >
 | < AND >
+}
+void Operation() :
+{}
+{
+< PLUS >
+| <MINUS >
+| < MULTIPLY >
+| < DIVIDE >
 }
 
 // { statement() } ou OneStatement()
@@ -188,12 +198,16 @@ void variableDefineHelper() :
 void variableAssignment() :
 {}
 {
-    variableAssignmentHelper()
+    variableAssignmentHelper() 
     (
-      < NUM > < PONTOVIRGULA >
+      < NUM > variablesOperationAUX()
 | 	  < FLOAT > < PONTOVIRGULA >
 | 	  < CHAR > < PONTOVIRGULA >
+| 	  < IDENTIFIER > variablesOperationAUX()
+|     < ESQPAR > variablesOperationESQ() 
     )
+
+
 }
 
 // Variável =
@@ -203,12 +217,46 @@ void variableAssignmentHelper() :
   < IDENTIFIER > < ASSIGNMENT >
 }
 
+
+void variablesOperation ():
+{}
+{	< IDENTIFIER > variablesOperationAUX()
+|   < NUM > variablesOperationAUX()
+
+
+}
+
+void variablesOperationAUX() :
+{}
+{
+	Operation() variablesOperation()
+|   < DIRPAR > Operation() variablesOperationESQ()
+|   < PONTOVIRGULA > 
+
+}
+
+void variablesOperationESQ() :
+{}
+{
+	< IDENTIFIER > variablesOperationESQaAUX()
+|   < NUM > variablesOperationESQaAUX()
+}
+
+void variablesOperationESQaAUX() :
+{}
+{ 
+	< DIRPAR > <PONTOVIRGULA > 
+|	Operation() variablesOperationESQ()
+
+}
+
 // while(RelationalStatement()) { statement() }
 void whileLoop() :
 {}
 {
   < WHILE > < ESQPAR > RelationalStatement() < DIRPAR > < ESQCURLY > statement() < DIRCURLY >
 }
+
 
 
 /* Código da soma
